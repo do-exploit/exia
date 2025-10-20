@@ -4,9 +4,9 @@ Helper scripts to test AI Agent capabilities in finding CI/CD failure root cause
 
 ## Prerequisites
 
-- GitHub CLI (`gh`) - [Install here](https://cli.github.com/)
+- [GitHub CLI (`gh`)](https://cli.github.com/)
 - Authenticate: `gh auth login`
-- Git and Poetry installed
+- [Git](https://git-scm.com/downloads) and [Poetry](https://python-poetry.org/docs/) installed
 
 ## Scripts
 

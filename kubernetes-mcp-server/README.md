@@ -14,7 +14,7 @@ kubectl apply -f deployment.yaml
 
 Now, your MCP is ready to use.
 
-![Kubernetes MCP n8n Configuration](.assets/kubernetes-mcp-n8n-configuration.png)
+![Kubernetes MCP n8n Configuration](../.assets/kubernetes-mcp-n8n-configuration.png)
 
 ## Notes
 
