@@ -10,7 +10,7 @@ training/case-8,wrong-base-image,Dockerfile uses outdated Python 2.7 base image 
 training/case-9,broken-copy-command,COPY command references non-existent path './nonexistent'
 training/case-10,test-failure,Test expects HTTP 500 instead of correct 200 status code
 training/case-11,linter-error,Code contains unused variable and excessive blank lines
-training/case-12,type-checking-error,Function return type annotation changed from dict to str incorrectly
+training/case-12,type-checking-error,HealthcheckResponse model changed message type from dict to str causing type mismatch
 training/case-13,memory-limit-low,Memory limits set too low (1Mi/2Mi) for application to run
 training/case-14,wrong-port,Container port changed to 9999 instead of correct 8000
 training/case-15,missing-service,Kubernetes Service definition removed from manifest
@@ -28,7 +28,7 @@ test/case-11,coverage-threshold-fail,Added uncovered functions that lower code c
 test/case-12,pre-commit-hook-fail,File contains multiple imports on single line 'import os,sys,json'
 test/case-13,missing-test-file,Test file test_app.py has been removed from test suite
 test/case-14,wrong-image-tag,Image tag references non-existent tag 'nonexistent-tag-12345'
-test/case-15,missing-health-endpoint,Health check endpoint route removed from router configuration
+test/case-15,missing-health-endpoint,Health check route function deleted from healthcheck.py
 test/case-16,cpu-limit-low,CPU limits set too low (1m/2m) for application to function
 test/case-17,resource-quota-exceeded,Resource requests set to 256Gi memory and 250000m CPU exceeding quotas
 test/case-18,timeout-too-short,Health check timeout set to 0 seconds which is invalid

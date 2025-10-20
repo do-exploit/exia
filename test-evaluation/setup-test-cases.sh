@@ -100,8 +100,8 @@ create_failure_branch() {
 
         "missing-health-endpoint")
             # Remove health check endpoint
-            sed -i '/healthcheck/d' applications/fastapi-starter-python/fastapi_starter_python/api/router/__init__.py
-            git add applications/fastapi-starter-python/fastapi_starter_python/api/router/__init__.py
+            sed -i '/@router.get("\/health"/,/return HealthcheckResponse/d' applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
+            git add applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
             ;;
 
         "incorrect-env-var")
@@ -253,8 +253,8 @@ create_failure_branch() {
 
         "type-checking-error")
             # Introduce type checking errors
-            sed -i 's/def get() -> dict:/def get() -> str:/' applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
-            git add applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
+            sed -i 's/message: str/message: dict/' applications/fastapi-starter-python/fastapi_starter_python/api/model/response.py
+            git add applications/fastapi-starter-python/fastapi_starter_python/api/model/response.py
             ;;
 
         "container-security-issue")
@@ -353,8 +353,15 @@ EOF
             ;;
     esac
 
+    # Check if there are changes to commit
+    if git diff --cached --quiet; then
+        echo -e "${RED}✗ No changes to commit for ${branch_name}${NC}"
+        echo -e "${RED}The sed command may not have matched anything${NC}"
+        exit 1
+    fi
+
     # Commit the change
-    git commit -m "chore: update" || true
+    git commit -m "chore: update"
 
     echo -e "${GREEN}✓ Branch ${branch_name} created successfully${NC}"
 }
