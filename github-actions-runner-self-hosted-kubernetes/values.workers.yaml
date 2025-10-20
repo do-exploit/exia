@@ -1,0 +1,6 @@
+# githubConfigSecret:
+#   github_token: THIS_SHOULD_BE_SAFE
+githubConfigUrl: https://github.com/do-exploit/exia-examples
+containerMode:
+  type: dind
+minRunners: 1

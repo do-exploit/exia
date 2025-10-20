@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-mcp-server
+  labels:
+    app: kubernetes-mcp-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kubernetes-mcp-server
+  template:
+    metadata:
+      labels:
+        app: kubernetes-mcp-server
+    spec:
+      containers:
+        - name: kubernetes-mcp-server
+          image: ghcr.io/azure/mcp-kubernetes:v0.0.9
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              hostPort: 3000
+          volumeMounts:
+            - name: kubeconfig
+              mountPath: /home/.mcp/.kube/config
+          command: ["/usr/local/bin/mcp-kubernetes"]
+          args: ["--transport", "streamable-http", "--host", "0.0.0.0", "--port", "3000", "--access-level", "readonly"]
+          env:
+            - name: KUBECONFIG
+              value: "/home/.mcp/.kube/config"
+      volumes:
+        - name: kubeconfig
+          hostPath:
+            path: /home/ubuntu/.kube/config
+            type: File
