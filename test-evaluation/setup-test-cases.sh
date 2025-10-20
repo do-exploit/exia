@@ -354,7 +354,7 @@ EOF
     esac
 
     # Commit the change
-    git commit -m "Test case: ${description}" || true
+    git commit -m "chore: update" || true
 
     echo -e "${GREEN}✓ Branch ${branch_name} created successfully${NC}"
 }
