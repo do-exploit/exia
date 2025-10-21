@@ -93,14 +93,17 @@ create_failure_branch() {
             ;;
 
         "wrong-image-tag")
-            # Use non-existent image tag
-            sed -i 's/:latest/:nonexistent-tag-12345/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
-            git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            # Use non-existent image tag in deployment workflow
+            sed -i 's/\${{ inputs.commit_id }}/nonexistent-tag-12345/' .github/workflows/deployment-kubernetes.yaml
+            git add .github/workflows/deployment-kubernetes.yaml
             ;;
 
         "missing-health-endpoint")
             # Remove health check endpoint
             sed -i '/@router.get("\/health"/,/return HealthcheckResponse/d' applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
+            cd applications/fastapi-starter-python
+            poetry run pre-commit run --all-files || :
+            cd ../../
             git add applications/fastapi-starter-python/fastapi_starter_python/api/router/healthcheck.py
             ;;
 
@@ -140,9 +143,9 @@ create_failure_branch() {
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
-        "missing-service")
-            # Remove service definition
-            sed -i '1,/---/d' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+        "service-port-mismatch")
+            # Service port doesn't match container port
+            sed -i 's/targetPort: 8000/targetPort: 8080/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
@@ -182,6 +185,18 @@ create_failure_branch() {
             git rm applications/fastapi-starter-python/entrypoint.sh
             ;;
 
+        "shell-syntax-error")
+            # Introduce shell syntax error in build script
+            sed -i '1i #!/bin/bash\nif [ $? -eq 0 ' applications/fastapi-starter-python/build.ci.sh
+            git add applications/fastapi-starter-python/build.ci.sh
+            ;;
+
+        "python-version-mismatch")
+            # Use Python 3.11 base while code requires 3.12+
+            sed -i 's/michaelact\/poetry:2.1.4-py3.12/michaelact\/poetry:2.1.4-py3.11/' applications/fastapi-starter-python/Dockerfile
+            git add applications/fastapi-starter-python/Dockerfile
+            ;;
+
         "wrong-workdir")
             # Set wrong working directory
             sed -i 's|WORKDIR /app|WORKDIR /wrong/path|' applications/fastapi-starter-python/Dockerfile
@@ -200,10 +215,10 @@ create_failure_branch() {
             git add applications/fastapi-starter-python/fastapi_starter_python/app.py
             ;;
 
-        "timeout-too-short")
-            # Set unrealistic timeout values
-            sed -i 's/timeoutSeconds: 5/timeoutSeconds: 0/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
-            sed -i 's/timeoutSeconds: 3/timeoutSeconds: 0/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+        "negative-initial-delay")
+            # Set negative initialDelaySeconds which is invalid
+            sed -i 's/initialDelaySeconds: 10/initialDelaySeconds: -5/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            sed -i 's/initialDelaySeconds: 5/initialDelaySeconds: -3/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
@@ -213,9 +228,9 @@ create_failure_branch() {
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
-        "missing-protocol")
-            # Remove protocol from port definition
-            sed -i '/protocol: TCP/d' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+        "probe-port-name-typo")
+            # Typo in probe port name reference
+            sed -i 's/port: http/port: htttp/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
@@ -234,14 +249,14 @@ create_failure_branch() {
             ;;
 
         "missing-namespace")
-            # Add namespace that doesn't exist
-            sed -i '/metadata:/a\  namespace: nonexistent-namespace' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
-            git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            # Break namespace syntax in deployment workflow
+            sed -i "s/namespace: '\${{ env.PROJECT }}-\${{ inputs.environment }}'/namespace: '\${{ env.PROJECT }}-\${{ inputs.nonexistent_var }}'/" .github/workflows/deployment-kubernetes.yaml
+            git add .github/workflows/deployment-kubernetes.yaml
             ;;
 
-        "coverage-threshold-fail")
-            # Lower coverage artificially
-            echo -e "\ndef uncovered_function():\n    pass\n\ndef another_uncovered():\n    pass" >> applications/fastapi-starter-python/fastapi_starter_python/app.py
+        "undefined-settings-variable")
+            # Reference undefined settings variable
+            sed -i 's/settings.VERSION_NUMBER/settings.NONEXISTENT_VERSION/' applications/fastapi-starter-python/fastapi_starter_python/app.py
             git add applications/fastapi-starter-python/fastapi_starter_python/app.py
             ;;
 
@@ -301,8 +316,8 @@ create_failure_branch() {
             ;;
 
         "pvc-not-found")
-            # Reference non-existent PVC
-            sed -i '/spec:/a\      volumes:\n        - name: data-volume\n          persistentVolumeClaim:\n            claimName: nonexistent-pvc' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            # Reference non-existent PVC - add to pod template spec
+            sed -i '/      containers:/i\      volumes:\n        - name: data-volume\n          persistentVolumeClaim:\n            claimName: nonexistent-pvc' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
@@ -313,14 +328,15 @@ create_failure_branch() {
             ;;
 
         "invalid-restart-policy")
-            # Invalid restart policy
-            sed -i 's/restartPolicy: Always/restartPolicy: Never/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            # Add container with invalid command
+            sed -i '/containers:/a\        - name: wrong-container\n          image: busybox\n          command: ["invalid-command-xyz"]' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
-        "missing-test-file")
-            # Remove test file
-            git rm applications/fastapi-starter-python/tests/unit/test_app.py
+        "test-import-error")
+            # Break test imports
+            sed -i 's/from fastapi_starter_python.app import app/from fastapi_starter_python.app import nonexistent_app/' applications/fastapi-starter-python/tests/unit/conftest.py
+            git add applications/fastapi-starter-python/tests/unit/conftest.py
             ;;
 
         "build-arg-missing")
@@ -330,21 +346,9 @@ create_failure_branch() {
             ;;
 
         "network-policy-block")
-            # Add restrictive network policy
-            cat >> deployment/kubernetes/dev/fastapi-starter-python/network-policy.yaml << 'EOF'
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: deny-all
-spec:
-  podSelector:
-    matchLabels:
-      app: fastapi-starter-python
-  policyTypes:
-    - Ingress
-    - Egress
-EOF
-            git add deployment/kubernetes/dev/fastapi-starter-python/network-policy.yaml
+            # Invalid service type
+            sed -i 's/type: ClusterIP/type: InvalidServiceType/' deployment/kubernetes/dev/fastapi-starter-python/app.yaml
+            git add deployment/kubernetes/dev/fastapi-starter-python/app.yaml
             ;;
 
         *)
@@ -375,12 +379,10 @@ create_failure_branch "training/case-1" "missing-dependency" "Missing FastAPI de
 create_failure_branch "training/case-2" "missing-import" "Import non-existent module in app.py"
 create_failure_branch "training/case-3" "poetry-lock-mismatch" "pyproject.toml modified without updating poetry.lock"
 
-# Build Failures - Syntax Errors (3 cases)
+# Build Failures - Syntax and Configuration (6 cases)
 create_failure_branch "training/case-4" "syntax-error-python" "Python syntax error in app.py"
 create_failure_branch "training/case-5" "dockerfile-syntax" "Dockerfile syntax error (FORM instead of FROM)"
 create_failure_branch "training/case-6" "invalid-yaml" "Invalid YAML syntax in Kubernetes manifest"
-
-# Build Failures - Configuration Errors (3 cases)
 create_failure_branch "training/case-7" "missing-dockerfile" "Dockerfile missing from repository"
 create_failure_branch "training/case-8" "wrong-base-image" "Wrong base image version in Dockerfile"
 create_failure_branch "training/case-9" "broken-copy-command" "COPY command references non-existent path"
@@ -393,7 +395,7 @@ create_failure_branch "training/case-12" "type-checking-error" "Type checking er
 # Deployment Failures (3 cases)
 create_failure_branch "training/case-13" "memory-limit-low" "Memory limit too low for application"
 create_failure_branch "training/case-14" "wrong-port" "Container port mismatch"
-create_failure_branch "training/case-15" "missing-service" "Kubernetes Service definition missing"
+create_failure_branch "training/case-15" "service-port-mismatch" "Service targetPort doesn't match container port"
 
 # ============================================================================
 # TEST CASES (35 cases)
@@ -407,23 +409,23 @@ create_failure_branch "test/case-4" "wrong-workdir" "Incorrect WORKDIR in Docker
 create_failure_branch "test/case-5" "circular-dependency" "Circular import dependency"
 
 # Build Failures - Syntax and Configuration (5 cases)
-create_failure_branch "test/case-6" "build-arg-missing" "Undefined build argument in Dockerfile"
-create_failure_branch "test/case-7" "container-security-issue" "Container running as root user"
+create_failure_branch "test/case-6" "shell-syntax-error" "Shell script syntax error in build script"
+create_failure_branch "test/case-7" "python-version-mismatch" "Python version mismatch in base image"
 create_failure_branch "test/case-8" "startup-crash" "Application crashes on startup"
 create_failure_branch "test/case-9" "duplicate-port" "Duplicate port definitions in service"
-create_failure_branch "test/case-10" "missing-protocol" "Missing protocol in port definition"
+create_failure_branch "test/case-10" "probe-port-name-typo" "Health probe references wrong port name"
 
 # Test Failures (5 cases)
-create_failure_branch "test/case-11" "coverage-threshold-fail" "Code coverage below threshold"
+create_failure_branch "test/case-11" "undefined-settings-variable" "Application references undefined settings attribute"
 create_failure_branch "test/case-12" "pre-commit-hook-fail" "Pre-commit hooks validation failure"
-create_failure_branch "test/case-13" "missing-test-file" "Test file missing from test suite"
+create_failure_branch "test/case-13" "test-import-error" "Test file imports non-existent function"
 create_failure_branch "test/case-14" "wrong-image-tag" "Non-existent Docker image tag"
 create_failure_branch "test/case-15" "missing-health-endpoint" "Health check endpoint not implemented"
 
 # Deployment - Resource Limitations (5 cases)
 create_failure_branch "test/case-16" "cpu-limit-low" "CPU limit too low for application"
 create_failure_branch "test/case-17" "resource-quota-exceeded" "Resource requests exceed cluster quota"
-create_failure_branch "test/case-18" "timeout-too-short" "Health check timeout too short"
+create_failure_branch "test/case-18" "negative-initial-delay" "Negative initialDelaySeconds in probe configuration"
 create_failure_branch "test/case-19" "replicas-too-high" "Replica count exceeds available resources"
 create_failure_branch "test/case-20" "incorrect-env-var" "Invalid environment variable configuration"
 
@@ -442,8 +444,8 @@ create_failure_branch "test/case-29" "init-container-fail" "Init container fails
 create_failure_branch "test/case-30" "secrets-not-found" "Referenced secret does not exist"
 create_failure_branch "test/case-31" "configmap-not-found" "Referenced ConfigMap does not exist"
 create_failure_branch "test/case-32" "pvc-not-found" "PersistentVolumeClaim not found"
-create_failure_branch "test/case-33" "invalid-restart-policy" "Invalid restart policy for deployment"
-create_failure_branch "test/case-34" "network-policy-block" "Network policy blocking required connections"
+create_failure_branch "test/case-33" "invalid-restart-policy" "Invalid container command causing CrashLoopBackOff"
+create_failure_branch "test/case-34" "network-policy-block" "Invalid Service type specified"
 create_failure_branch "test/case-35" "resource-quota-exceeded" "Namespace resource quota exceeded"
 
 # Return to original branch

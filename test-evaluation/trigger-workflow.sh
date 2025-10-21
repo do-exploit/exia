@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script to trigger GitHub Actions workflow and wait for completion
-# Usage: ./trigger-workflow.sh <branch_name>
+# Usage: ./trigger-workflow.sh <branch_name> <workflow_file> [commit_id]
 
 set -e
 
@@ -11,29 +11,47 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Check if branch name is provided
-if [ -z "$1" ]; then
-    echo -e "${RED}Error: Branch name is required${NC}"
-    echo "Usage: $0 <branch_name>"
+# Check if required arguments are provided
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo -e "${RED}Error: Branch name and workflow file are required${NC}"
+    echo "Usage: $0 <branch_name> <workflow_file> [commit_id]"
+    echo ""
+    echo "Arguments:"
+    echo "  branch_name    - Required: Git branch to run workflow on"
+    echo "  workflow_file  - Required: Workflow file to run"
+    echo "  commit_id      - Optional: Commit ID/tag to deploy (default: latest, only for deployment-kubernetes.yaml)"
+    echo ""
+    echo "Examples:"
+    echo "  $0 test/case-1 deployment-kubernetes.yaml        # Deploy with latest tag"
+    echo "  $0 test/case-1 deployment-kubernetes.yaml abc123 # Deploy specific commit"
+    echo "  $0 test/case-1 build-push.yaml                   # Run full build pipeline"
     exit 1
 fi
 
 BRANCH_NAME=$1
 REPO="do-exploit/exia-examples"
-WORKFLOW_FILE="build-push.yaml"
+WORKFLOW_FILE="$2"
+COMMIT_ID="${3:-latest}"
 
 # Workflow inputs
 MODULE="fastapi-starter-python"
-DEPLOYMENT_TYPE="kubernetes"
 DEPLOYMENT_ENVIRONMENT="dev"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}GitHub Actions Workflow Trigger${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "${BLUE}Branch:${NC} ${BRANCH_NAME}"
+echo -e "${BLUE}Workflow:${NC} ${WORKFLOW_FILE}"
 echo -e "${BLUE}Module:${NC} ${MODULE}"
-echo -e "${BLUE}Deployment Type:${NC} ${DEPLOYMENT_TYPE}"
-echo -e "${BLUE}Deployment Environment:${NC} ${DEPLOYMENT_ENVIRONMENT}"
+
+if [ "$WORKFLOW_FILE" = "deployment-kubernetes.yaml" ]; then
+    echo -e "${BLUE}Commit ID:${NC} ${COMMIT_ID}"
+    echo -e "${BLUE}Environment:${NC} ${DEPLOYMENT_ENVIRONMENT}"
+else
+    echo -e "${BLUE}Deployment Type:${NC} kubernetes"
+    echo -e "${BLUE}Deployment Environment:${NC} ${DEPLOYMENT_ENVIRONMENT}"
+fi
+
 echo -e "${GREEN}========================================${NC}\n"
 
 # Check if gh CLI is installed
@@ -52,12 +70,22 @@ fi
 
 # Trigger the workflow
 echo -e "${YELLOW}Triggering workflow...${NC}"
-gh workflow run "${WORKFLOW_FILE}" \
-    --repo "${REPO}" \
-    --ref "${BRANCH_NAME}" \
-    --field module="${MODULE}" \
-    --field deployment_type="${DEPLOYMENT_TYPE}" \
-    --field deployment_environment="${DEPLOYMENT_ENVIRONMENT}"
+
+if [ "$WORKFLOW_FILE" = "deployment-kubernetes.yaml" ]; then
+    # Deployment workflow
+    gh workflow run "${WORKFLOW_FILE}" \
+        --repo "${REPO}" \
+        --ref "${BRANCH_NAME}" \
+        --field module="${MODULE}" \
+        --field commit_id="${COMMIT_ID}" \
+        --field environment="${DEPLOYMENT_ENVIRONMENT}"
+else
+    # Build and push workflow
+    gh workflow run "${WORKFLOW_FILE}" \
+        --repo "${REPO}" \
+        --ref "${BRANCH_NAME}" \
+        --field module="${MODULE}"
+fi
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to trigger workflow${NC}"
@@ -139,8 +167,13 @@ if [ "$WORKFLOW_STATUS" = "success" ]; then
     echo -e "${BLUE}Please evaluate the results:${NC}"
     echo "1. Review the workflow logs above"
     echo "2. Check if all jobs completed as expected"
-    echo "3. Verify the deployment in ${DEPLOYMENT_ENVIRONMENT} environment"
-    echo "4. Confirm the artifact was pushed correctly"
+    if [ "$WORKFLOW_FILE" = "deployment-kubernetes.yaml" ]; then
+        echo "3. Verify the deployment in ${DEPLOYMENT_ENVIRONMENT} environment"
+        echo "4. Check if pods are running correctly"
+    else
+        echo "3. Verify the deployment in ${DEPLOYMENT_ENVIRONMENT} environment"
+        echo "4. Confirm the artifact was pushed correctly"
+    fi
 elif [ "$WORKFLOW_STATUS" = "failure" ]; then
     echo -e "${RED}✗ Workflow failed!${NC}\n"
     echo -e "${BLUE}Please evaluate the failure:${NC}"

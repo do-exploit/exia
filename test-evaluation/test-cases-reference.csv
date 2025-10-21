@@ -13,25 +13,25 @@ training/case-11,linter-error,Code contains unused variable and excessive blank 
 training/case-12,type-checking-error,HealthcheckResponse model changed message type from dict to str causing type mismatch
 training/case-13,memory-limit-low,Memory limits set too low (1Mi/2Mi) for application to run
 training/case-14,wrong-port,Container port changed to 9999 instead of correct 8000
-training/case-15,missing-service,Kubernetes Service definition removed from manifest
+training/case-15,service-port-mismatch,Service targetPort set to 8080 but container port is 8000
 test/case-1,incompatible-versions,Added pydantic-core ^1.0.0 which conflicts with pydantic ^2.0.0
 test/case-2,wrong-python-version,Python version requirement set to 3.15-3.17 which doesn't exist
 test/case-3,missing-entrypoint,Entrypoint script entrypoint.sh has been removed
 test/case-4,wrong-workdir,WORKDIR set to '/wrong/path' instead of '/app'
 test/case-5,circular-dependency,Router module imports from app which creates circular dependency
-test/case-6,build-arg-missing,Dockerfile references undefined build argument UNDEFINED_ARG
-test/case-7,container-security-issue,Container configured to run as root user (security risk)
+test/case-6,shell-syntax-error,Shell script has unclosed if statement causing syntax error
+test/case-7,python-version-mismatch,Base image uses Python 3.11 but code requires Python 3.12+
 test/case-8,startup-crash,Application imports sys and calls sys.exit(1) immediately on startup
 test/case-9,duplicate-port,Service defines port 8000 twice with different target ports
-test/case-10,missing-protocol,Protocol field removed from port definition in manifest
-test/case-11,coverage-threshold-fail,Added uncovered functions that lower code coverage percentage
+test/case-10,probe-port-name-typo,Health probe references port 'htttp' instead of 'http' causing probe failure
+test/case-11,undefined-settings-variable,Application references settings.NONEXISTENT_VERSION which doesn't exist
 test/case-12,pre-commit-hook-fail,File contains multiple imports on single line 'import os,sys,json'
-test/case-13,missing-test-file,Test file test_app.py has been removed from test suite
-test/case-14,wrong-image-tag,Image tag references non-existent tag 'nonexistent-tag-12345'
+test/case-13,test-import-error,Test fixture imports nonexistent_app instead of app causing ImportError
+test/case-14,wrong-image-tag,Deployment workflow uses hardcoded nonexistent tag instead of commit_id parameter
 test/case-15,missing-health-endpoint,Health check route function deleted from healthcheck.py
 test/case-16,cpu-limit-low,CPU limits set too low (1m/2m) for application to function
 test/case-17,resource-quota-exceeded,Resource requests set to 256Gi memory and 250000m CPU exceeding quotas
-test/case-18,timeout-too-short,Health check timeout set to 0 seconds which is invalid
+test/case-18,negative-initial-delay,Probe initialDelaySeconds set to negative values (-5 and -3) which is invalid
 test/case-19,replicas-too-high,Replica count set to 10000 exceeding available cluster resources
 test/case-20,incorrect-env-var,Added invalid environment variable INVALID_CONFIG with broken value
 test/case-21,missing-probe-path,Health probe path changed to '/nonexistent' instead of '/health'
@@ -39,13 +39,13 @@ test/case-22,wrong-selector,Service selector uses 'wrong-app-name' instead of 'f
 test/case-23,invalid-api-version,Kubernetes apiVersion set to 'v99' which doesn't exist
 test/case-24,missing-namespace,Deployment references non-existent namespace 'nonexistent-namespace'
 test/case-25,imagepull-policy-error,imagePullPolicy set to 'InvalidPolicy' instead of valid value
-test/case-26,volume-mount-missing,Volume 'missing-volume' is defined but not mounted in container
+test/case-26,volume-mount-missing,Volume 'missing-volume' is wrongly placed
 test/case-27,rolling-update-config-error,maxSurge set to -1 and maxUnavailable set to 100 (invalid values)
 test/case-28,affinity-rule-error,Node affinity requires non-existent label 'nonexistent-label'
 test/case-29,init-container-fail,Init container configured to exit with code 1 (failure)
 test/case-30,secrets-not-found,Environment variable references non-existent secret 'nonexistent-secret'
 test/case-31,configmap-not-found,Environment variable references non-existent ConfigMap 'nonexistent-configmap'
 test/case-32,pvc-not-found,Volume references non-existent PersistentVolumeClaim 'nonexistent-pvc'
-test/case-33,invalid-restart-policy,Deployment restart policy set to 'Never' instead of 'Always'
-test/case-34,network-policy-block,Network policy denies all ingress and egress traffic
+test/case-33,invalid-restart-policy,Container with invalid command 'invalid-command-xyz' causing CrashLoopBackOff
+test/case-34,network-policy-block,Service type set to 'InvalidServiceType' which is not a valid Kubernetes service type
 test/case-35,resource-quota-exceeded,Resource requests (256Gi/512Gi memory, 250000m CPU) exceed namespace quota

@@ -1,6 +1,6 @@
 # Test Evaluation
 
-Helper scripts to test AI Agent capabilities in finding CI/CD failure root causes.
+Helper scripts to test AI Agent capabilities by creating GitHub Action failures.
 
 ## Prerequisites
 
@@ -33,8 +33,3 @@ This creates branches: `training/case-1` to `training/case-15` and `test/case-1`
 cd /path/to/exia
 ./trigger-workflow.sh training/case-1
 ```
-
-The script will:
-- Trigger GitHub Actions workflow
-- Monitor progress
-- Show results and evaluation prompts
