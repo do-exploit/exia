@@ -15,7 +15,7 @@ helm upgrade arc \
     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller:0.13.0
 
 # Install runner scale set
-helm install "arc-exia-examples" \
+helm upgrade "arc-exia-examples" \
     --namespace "arc-runners-workers" \
     --install \
     --create-namespace \
