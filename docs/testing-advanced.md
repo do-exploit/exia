@@ -10,14 +10,16 @@
 8. [Install GitHub Runner (Self-hosted)](./install-github-runner-self-hosted.md)
 9. [Install n8n](./install-n8n.md)
 10. [Create an Advanced n8n Workflow](./create-advanced-n8n-workflow.md)
+11. GitHub CLI -  [Installation guide](https://cli.github.com/)
 
 # Advanced Test
 
-1. Clone the repository:
+1. Clone the repository and authenticate to GitHub:
 
 ```bash
 git clone https://github.com/do-exploit/exia
 cd exia/test-evaluation/
+gh auth login
 ```
 2. Check available branches: https://github.com/do-exploit/exia-examples/branches/all
 
