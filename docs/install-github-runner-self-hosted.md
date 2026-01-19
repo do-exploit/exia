@@ -22,7 +22,7 @@ helm upgrade arc \
 - Replace `REPLACE_WITH_YOUR_GITHUB_ORG` with your GitHub Organization
 
 ```bash
-helm install "arc-exia-examples" \
+helm upgrade "arc-exia-examples" \
     --namespace "arc-runners-workers" \
     --install \
     --create-namespace \
