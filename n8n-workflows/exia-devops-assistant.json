@@ -1,0 +1,318 @@
+{
+  "name": "[exia] DevOps Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-09-2025",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        224
+      ],
+      "id": "f0d5f48d-caf6-4957-881d-ec916f1f5b80",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "huOQSW8bGt9dkmS4",
+          "name": "Google Gemini(PaLM) michaelact"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        224
+      ],
+      "id": "d4b4e9b7-28fd-448c-bd6d-3858644ba82a",
+      "name": "Window Buffer Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://example.com/mcp",
+        "serverTransport": "httpStreamable",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        224
+      ],
+      "id": "ef9639c9-a1ed-4e71-93f6-c893eb3b69e3",
+      "name": "Kubernetes MCP",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "0Box9oVPWSE8V8aH",
+          "name": "Kubernetes Token - do-exploit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        -48
+      ],
+      "id": "5c9a4a71-6a4c-4e62-bb69-adcad682d060",
+      "name": "When chat message received",
+      "webhookId": "55843d66-c36c-46d7-bb8d-091922810bec"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are **Exia**, an AI DevOps Assistant helping developers diagnose and fix CI/CD pipeline issues.\n\n**Your goals:**\n\n* Think and reason like an experienced DevOps engineer.\n* Read logs, configs, and recent Git changes in the provided workflow branch carefully.\n* Find the **real root cause** of failures — not just the visible error.\n* Explain clearly what happened and how to fix it.\n* If info is missing, say what else is needed to confirm the cause.\n\n**Your style:**\n\n* Be direct, confident, and practical.\n* Use short sections or bullet points:\n\n  * **Diagnosis** – what failed\n  * **Root Cause** – why it failed\n  * **Fix** – how to solve it\n  * *(Optional)* **Notes** – extra context or prevention tips\n* Include code snippets or config examples when helpful.\n* Always focus on clarity and usefulness.\n",
+          "returnIntermediateSteps": true,
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        -48
+      ],
+      "id": "d2bd5877-74ae-41cf-a513-9710fb534c09",
+      "name": "AI Agent (exia)"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://api.githubcopilot.com/mcp/x/actions/readonly",
+        "serverTransport": "httpStreamable",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        224
+      ],
+      "id": "33cadb26-71cd-420a-9251-f39b63882e86",
+      "name": "GitHub Action MCP",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "Ii8lzgnbAnwM5tzo",
+          "name": "GitHub Token - do-exploit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://api.githubcopilot.com/mcp/readonly",
+        "serverTransport": "httpStreamable",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        368
+      ],
+      "id": "4a7f6dbc-c7fa-4226-aa53-7007d581e8ed",
+      "name": "GitHub Common Read MCP",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "Ii8lzgnbAnwM5tzo",
+          "name": "GitHub Token - do-exploit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "execution",
+        "operation": "get",
+        "executionId": "1038552 ",
+        "options": {
+          "activeWorkflows": true
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -48
+      ],
+      "id": "24cf0aa3-6805-4700-8d48-87b519bcdff1",
+      "name": "Get an execution",
+      "credentials": {
+        "n8nApi": {
+          "id": "1c2P4ggejdiy5VgD",
+          "name": "n8n - Michael Act"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "={{ $json.id }}.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        -48
+      ],
+      "id": "e2e7d792-cf2b-4fd8-91d6-05a0ada96add",
+      "name": "Convert to File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "\n# Main Workflow",
+        "height": 672,
+        "width": 960,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "b9c756b1-b2db-4c26-a92d-aa48ca7a0ea0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Backup Execution Data",
+        "height": 272,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "aa42307a-06c4-4fab-9d8a-ff372fade9e9",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kubernetes MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Action MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Common Read MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent (exia)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent (exia)": {
+      "main": [
+        []
+      ]
+    },
+    "Get an execution": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e4ca07d3-354c-4fd0-87eb-ec74c509415e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9c528530821af9c3afd6aa73e4fa8dfe3e3f16e93e96c878ffef4863df6cd850"
+  },
+  "id": "mslNZKhEUrDqIOCA",
+  "tags": [
+    {
+      "updatedAt": "2025-07-12T10:29:29.109Z",
+      "createdAt": "2025-07-12T10:29:29.109Z",
+      "id": "OzzDrIBqWwUcTMAH",
+      "name": "SRE Automation"
+    }
+  ]
+}

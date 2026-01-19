@@ -1,0 +1,29 @@
+services:
+  n8n:
+    image: n8nio/n8n:stable
+    restart: unless-stopped
+    container_name: n8n
+    ports:
+     - "127.0.0.1:5678:5678"
+    environment:
+      - N8N_HOST=127.0.0.1
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_ENV=production
+      - N8N_HIDE_USAGE_PAGE=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - GENERIC_TIMEZONE=Asia/Jakarta
+      - NODE_FUNCTION_ALLOW_BUILTIN=crypto
+      - NODE_FUNCTION_ALLOW_EXTERNAL=google-auth-library
+      - DB_SQLITE_POOL_SIZE=4
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./files:/files
+
+volumes:
+  n8n-data:
