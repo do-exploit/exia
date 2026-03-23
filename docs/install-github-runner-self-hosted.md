@@ -6,7 +6,17 @@
 
 # Install GitHub Runner (Self-hosted)
 
-1. Install the Actions Runner Controller (ARC):
+1. Create a Kubernetes secret for the GitHub token:
+
+- Replace `REPLACE_WITH_YOUR_GITHUB_TOKEN` with your GitHub Token that you saved earlier
+
+```bash
+kubectl create secret generic arc-secret \
+   --namespace=arc-runners \
+   --from-literal=github_token='REPLACE_WITH_YOUR_GITHUB_TOKEN'
+```
+
+2. Install the Actions Runner Controller (ARC):
 
 ```bash
 helm upgrade arc \
@@ -16,7 +26,7 @@ helm upgrade arc \
     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller:0.13.0
 ```
 
-2. Install the Runner Scale Set Workers:
+3. Install the Runner Scale Set Workers:
 
 - Replace `REPLACE_WITH_YOUR_GITHUB_TOKEN` with your GitHub Token that you saved earlier
 - Replace `REPLACE_WITH_YOUR_GITHUB_ORG` with your GitHub Organization
@@ -32,7 +42,7 @@ helm upgrade "arc-exia-examples" \
     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set:0.13.0
 ```
 
-3. Grant permissions:
+4. Grant permissions:
 
 ```bash
 kubectl apply -f clusterroleadmin.yaml
